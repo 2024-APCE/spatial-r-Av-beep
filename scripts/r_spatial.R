@@ -64,6 +64,7 @@ woodybiom<-terra::rast("./2016_WoodyVegetation/TBA_gam_utm36S.tif")
 hillshade<-terra::rast("./2023_elevation/hillshade_z5.tif")
 rainfall<-terra::rast("./rainfall/CHIRPS_MeanAnnualRainfall.tif")
 elevation<-terra::rast("./2023_elevation/elevation_90m.tif")
+distriver<-terra::rast("./2022_rivers/DistanceToRiver.tif")
 
 # inspect the data 
 class(protected_areas)
@@ -73,8 +74,8 @@ plot(elevation)
 plot(protected_areas, add=T)
 
 # set the limits of the map to show (xmin, xmax, ymin, ymax in utm36 coordinates)
-xlimits<-c(550000,900000)
-ylimits<-c(9600000,9950000)
+xlimits<-c(740000,790000)
+ylimits<-c(9740000,9770000)
 
 # plot the woody biomass map that you want to predict
 woody_map <- ggplot () +
@@ -100,14 +101,11 @@ woody_map <- ggplot () +
   ggspatial::annotation_scale(location="bl", width_hint=0.2)
 woody_map
 
-
-
-
 # plot the rainfall map
 rain_map <- ggplot () +
   tidyterra::geom_spatraster(data=rainfall) +
   scale_fill_gradientn(colours=pal_zissou1, 
-                       limits=c(264,2500),
+                       limits=c(300,1500),
                        oob=squish,
                        name="mm") +
   tidyterra::geom_spatvector(data=protected_areas,
@@ -130,7 +128,7 @@ rain_map
 elev_map <- ggplot () +
   tidyterra::geom_spatraster(data=elevation) +
   scale_fill_gradientn(colours=terrain.colors(10), 
-                       limits=c(500,2100),
+                       limits=c(1500,2100),
                        oob=squish,
                        name="meters") +
   tidyterra::geom_spatvector(data=protected_areas,
@@ -164,14 +162,111 @@ woody_map + elev_map + rain_map + plot_layout(ncol=2)
 xlimits<-sf::st_bbox(studyarea)[c(1,3)]
 ylimits<-sf::st_bbox(studyarea)[c(2,4)]
 saExt<-terra::ext(studyarea)
+saExt
 
 # crop the woody biomass to the extent of the studyarea
+woodybiom_star<-terra::crop(woodybiom, saExt)
 
+#crop rainfall to the extent of the studyarea
+rainfall_star <- terra::crop(rainfall, saExt)
+
+#crop elevation to the extent of the studyarea
+elevation_star <- terra::crop(elevation, saExt)
 
 # plot the woody biomass
-
+woody_map_star <- ggplot () +
+  tidyterra::geom_spatraster(data=woodybiom_star) +
+  scale_fill_gradientn(colours=rev(terrain.colors(6)), 
+                       limits=c(0.77,6.55),
+                       oob=squish,
+                       name="TBA/ha") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Woody biomass in the study area",
+       subtitle="Tropical Biomass Assessment 2016",
+       caption="Source: APCE2024") +
+  coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+woody_map_star
 
 # make maps also for the other layers that you found
+rain_map_star <- ggplot () +
+  tidyterra::geom_spatraster(data=rainfall) +
+  scale_fill_gradientn(colours=pal_zissou1, 
+                       limits=c(300,1500),
+                       oob=squish,
+                       name="mm") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Average annual rainfall in the study area",
+       caption="Source: APCE2024") +
+  coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2) 
+rain_map_star
+
+elev_map_star <- ggplot () +
+  tidyterra::geom_spatraster(data=elevation_star) +
+  scale_fill_gradientn(colours=terrain.colors(10), 
+                       limits=c(1500,2100),
+                       oob=squish,
+                       name="meters") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Elevation in the study area",
+       caption="Source: APCE2024") +
+  coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+elev_map_star
+
+woody_map_star + elev_map_star + rain_map_star + plot_layout(ncol=2)
+
+
+#distance to river
+distriver_map <- ggplot () +
+  tidyterra::geom_spatraster(data=distriver) +
+  scale_fill_gradientn(colours=Spectral), 
+                       limits=c(0,15000),
+                       oob=squish,
+                       name="km") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Distance to river in the study area",
+       caption="Source: APCE2024") +
+  coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+distriver_map
 
 # create 500 random points in our study area
 
