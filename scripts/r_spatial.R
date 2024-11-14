@@ -65,6 +65,9 @@ hillshade<-terra::rast("./2023_elevation/hillshade_z5.tif")
 rainfall<-terra::rast("./rainfall/CHIRPS_MeanAnnualRainfall.tif")
 elevation<-terra::rast("./2023_elevation/elevation_90m.tif")
 distriver<-terra::rast("./2022_rivers/DistanceToRiver.tif")
+treecover<-terra::rast("./2019_copernicus_treecover/copernicus_tree_cover_new.tif")
+soil<-terra::rast("./soil/CEC_5_15cm.tif")
+burning<-terra::rast("./burning/BurnFreq.tif")
 
 # inspect the data 
 class(protected_areas)
@@ -188,9 +191,7 @@ woody_map_star <- ggplot () +
                              fill=NA, colour="red", linewidth=1)+
   tidyterra::geom_spatvector(data=lakes,
                              fill="royalblue3", linewidth=0.5)+
-  labs(title="Woody biomass in the study area",
-       subtitle="Tropical Biomass Assessment 2016",
-       caption="Source: APCE2024") +
+  labs(title="Woody biomass in the study area")+
   coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
   theme(axis.text=element_blank(),
         axis.ticks = element_blank())+
@@ -201,7 +202,7 @@ woody_map_star
 rain_map_star <- ggplot () +
   tidyterra::geom_spatraster(data=rainfall) +
   scale_fill_gradientn(colours=pal_zissou1, 
-                       limits=c(300,1500),
+                       limits=c(600,1600),
                        oob=squish,
                        name="mm") +
   tidyterra::geom_spatvector(data=protected_areas,
@@ -212,8 +213,7 @@ rain_map_star <- ggplot () +
                              fill=NA, colour="red", linewidth=1)+
   tidyterra::geom_spatvector(data=lakes,
                              fill="royalblue3", linewidth=0.5)+
-  labs(title="Average annual rainfall in the study area",
-       caption="Source: APCE2024") +
+  labs(title="Average annual rainfall in the study area")+
   coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
   theme(axis.text=element_blank(),
         axis.ticks = element_blank())+
@@ -234,8 +234,7 @@ elev_map_star <- ggplot () +
                              fill=NA, colour="red", linewidth=1)+
   tidyterra::geom_spatvector(data=lakes,
                              fill="royalblue3", linewidth=0.5)+
-  labs(title="Elevation in the study area",
-       caption="Source: APCE2024") +
+  labs(title="Elevation in the study area")+
   coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
   theme(axis.text=element_blank(),
         axis.ticks = element_blank())+
@@ -248,7 +247,7 @@ woody_map_star + elev_map_star + rain_map_star + plot_layout(ncol=2)
 #distance to river
 distriver_map <- ggplot () +
   tidyterra::geom_spatraster(data=distriver) +
-  scale_fill_gradientn(colours=Spectral), 
+  scale_fill_gradientn(colours=pal_zissou2, 
                        limits=c(0,15000),
                        oob=squish,
                        name="km") +
@@ -260,13 +259,83 @@ distriver_map <- ggplot () +
                              fill=NA, colour="red", linewidth=1)+
   tidyterra::geom_spatvector(data=lakes,
                              fill="royalblue3", linewidth=0.5)+
-  labs(title="Distance to river in the study area",
-       caption="Source: APCE2024") +
+  labs(title="Distance to river in the study area")+
   coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
   theme(axis.text=element_blank(),
         axis.ticks = element_blank())+
   ggspatial::annotation_scale(location="bl", width_hint=0.2)
 distriver_map
+
+#treecover
+tree_map <-ggplot () +
+  tidyterra::geom_spatraster(data=treecover) +
+  scale_fill_gradientn(colours=rev(terrain.colors(10)), 
+                       limits=c(0,60),
+                       oob=squish,
+                       name="km") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Treecover in the study area") +
+coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+tree_map
+
+#soil map
+soil_map <- ggplot ()+
+  tidyterra::geom_spatraster(data=soil) +
+  scale_fill_gradientn(colours=(pal_zissou2), 
+                       limits=c(134,274),
+                       oob=squish,
+                       name="km") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Soil fertility in the study area") +
+  coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+soil_map
+
+#burnmap
+burning_map <- ggplot ()+
+  tidyterra::geom_spatraster(data=burning) +
+  scale_fill_gradientn(colours=(pal_zissou2), 
+                       limits=c(0,14),
+                       oob=squish,
+                       name="km") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Burn frequency in the study area") +
+  coord_sf(xlim=xlimits, ylim=ylimits, expand=F, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+burning_map
+
+#maps together
+woody_map_star + elev_map_star + rain_map_star + distriver_map + burning_map + soil_map + plot_layout(ncol=2)
+
+ggsave("studyarea.png", width=12, height=8, dpi=300)
 
 # create 500 random points in our study area
 
