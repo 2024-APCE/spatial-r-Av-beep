@@ -498,8 +498,8 @@ ggsave("studyarea.png", width=12, height=8, dpi=300)
 ###   from here the points
 
 # create 250 random points in your study area
-set.seed(123)
-rpoints <- terra::spatSample(studyarea, size = 250, 
+set.seed(124)
+rpoints <- terra::spatSample(studyarea, size = 275, 
                              method = "random")
 # plot the points
 rpoints_map_sa<-ggplot() +
@@ -523,12 +523,13 @@ rpoints_map_sa
 #all maps together
 woody_map_star + elev_map_star + rainfall_map_sa+ CoreProtectedAreas_map_sa + distriver_map + burning_map + soil_map + tree_map + lastburn_map + landform_map + rpoints_map_sa +plot_layout(ncol=3)
 
+ggsave("./figures/studyarea.png", width=12, height=8, dpi=300)
 
 # extract your the values of the different raster layers to the points
 # Extract raster values at the points
 woody_points <- terra::extract(woodybiom_star, rpoints) |> 
   as_tibble() |>
-  dplyr::rename(woody=TBA_gam_utm36S)
+  dplyr::rename(woody=TBA_gam_utm36s)
 woody_points
 dist2river_points <- terra::extract(dist2river_sa, rpoints) |> 
   as_tibble() |>
@@ -554,9 +555,78 @@ burnfreq_points <- terra::extract(burnfreq_sa, rpoints) |>
   dplyr::rename(burnfreq=burned_sum)
 burnfreq_points
 landform_points <- terra::extract(landform_sa, rpoints) |> 
-  as_tibble() |>
+  as_tibble()|>
   dplyr::rename(hills=remapped)
 landform_points
+
+pointdata<-cbind(dist2river_points[,2],elevation_points[,2],
+                 CorProtAr_points[,2],rainfall_points[,2], 
+                 cec_points[,2],burnfreq_points[,2],
+                 landform_points[,2],woody_points[,2]) |>
+  as_tibble()
+pointdata <- data.frame(pointdata)
+pointdata
+
+pointdata2<- pointdata[complete.cases(pointdata),]
+
+#next stap
+# plot how woody cover is predicted by different variables
+# Create a correlation panel plot
+library(psych)
+psych::pairs.panels(
+  pointdata ,
+  method = "pearson",     # Correlation method (use "spearman" for rank correlation)
+  hist.col = "lightblue",  # Color for histograms
+  density = TRUE,          # Add density plots
+  ellipses = F,         # Add correlation ellipses
+  lm = TRUE,                # Add linear regression lines
+  stars=T
+)
+
+# make long format
+names(pointdata2)
+pointdata_long<-pivot_longer(data=pointdata2,
+                             cols = dist2river:hills, # all except woody
+                             names_to ="pred_var",
+                             values_to = "pred_val")
+pointdata_long
+
+# panel plot
+ggplot(data=pointdata_long, mapping=aes(x=pred_val,y=woody,group=pred_var)) +
+  geom_point() +
+  geom_smooth() +
+  ylim(0,40) +
+  facet_wrap(~pred_var,scales="free") 
+
+# do a pca
+# Load the vegan package
+library(vegan)
+# Perform PCA using the rda() function
+pca_result <- vegan::rda(pointdata2,
+                         scale = TRUE)
+# Display a summary of the PCA
+summary(pca_result)
+
+# Plot the PCA
+plot(pca_result, scaling = 2, type="n", xlab="",ylab="")  # Use scaling = 1 for distance preservation, scaling = 2 for correlations
+# Add points for samples
+points(pca_result, display = "sites", pch=pointdata$CorProtAr+1, col = pointdata$hills+1, bg = "blue", cex = 1)
+# Add arrows for variables
+arrows(0, 0, scores(pca_result, display = "species")[, 1], scores(pca_result, display = "species")[, 2], 
+       length = 0.1, col = "red")
+# Label the variables with arrows
+text(scores(pca_result, display = "species")[, 1], scores(pca_result, display = "species")[, 2], 
+     labels = colnames(pointdata), col = "red", cex = 0.8, pos = 4)
+# Add axis labels and a title
+title(main = "PCA Biplot")
+xlabel <- paste("PC1 (", round(pca_result$CA$eig[1] / sum(pca_result$CA$eig) * 100, 1), "%)", sep = "")
+ylabel <- paste("PC2 (", round(pca_result$CA$eig[2] / sum(pca_result$CA$eig) * 100, 1), "%)", sep = "")
+title(xlab=xlabel)
+title(ylab=ylabel)
+# add contours for woody cover
+vegan::ordisurf(pca_result, pointdata2$woody, add = TRUE, col = "green4")
+
+
 
 
 
