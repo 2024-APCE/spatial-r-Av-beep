@@ -629,25 +629,3 @@ vegan::ordisurf(pca_result, pointdata2$woody, add = TRUE, col = "green4")
 
 
 
-
-# create 500 random points in our study area
-
-
-# and add them to the previous map
-
-# make distance to river map
-
-
-
-### put all maps together
-
-
-
-# extract your the values of the different raster layers to the points
-
-
-# make long format
-
-# plot how woody cover is predicted by different variables
-
-
