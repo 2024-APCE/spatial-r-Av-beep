@@ -28,6 +28,7 @@ SEMdatastd <- SEMdata |>
   mutate_all(~(scale(.) %>% as.vector)) |>
   as_tibble()
 SEMdatastd
+names(SEMdatastd)
 # note that this does not affect the relations between the variables, only the scales  
 
 # make a pairs panel to inspect linearity of relations and expected normality of residuals
@@ -62,6 +63,17 @@ woody_model
 
 woody_fit <- lavaan::sem(woody_model, data = SEMdatastd)
 summary(woody_fit, standardized = T, fit.measures = T, rsquare = T)
+
+#another try
+woody_model1 <- 'woody~burnfreq+cec+hills
+                burnfreq~CorProtAr+rainfall
+                cec~dist2river+rainfall
+                rainfall~elevation
+                dist2river~elevation'
+woody_model1
+
+woody_fit1 <- lavaan::sem(woody_model1, data = SEMdatastd)
+summary(woody_fit1, standardized = T, fit.measures = T, rsquare = T)
 
 # show the model results
 summary(Leaf_N_fit, standardized = T, fit.measures = T, rsquare = T)
