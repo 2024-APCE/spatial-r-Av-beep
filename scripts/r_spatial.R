@@ -523,7 +523,7 @@ rpoints_map_sa
 #all maps together
 woody_map_star + elev_map_star + rainfall_map_sa+ CoreProtectedAreas_map_sa + distriver_map + burning_map + soil_map + tree_map + lastburn_map + landform_map + rpoints_map_sa +plot_layout(ncol=3)
 
-ggsave("./figures/studyarea.png", width=12, height=8, dpi=300)
+#ggsave("./figures/studyarea.png", width=12, height=8, dpi=300)
 
 # extract your the values of the different raster layers to the points
 # Extract raster values at the points
@@ -568,6 +568,10 @@ pointdata <- data.frame(pointdata)
 pointdata
 
 pointdata2<- pointdata[complete.cases(pointdata),]
+pointdata2
+
+getwd()
+readr::write_csv(pointdata2, "pointdata.csv")
 
 #next stap
 # plot how woody cover is predicted by different variables
