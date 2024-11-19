@@ -11,22 +11,40 @@ colSums(is.na(pointdata))
 psych::pairs.panels(pointdata,stars = T, ellipses = F)
 
 # Model 1: woody predicted by burnfreq and rainfall
-model_woody <- lm(woody ~  cec +burnfreq, 
+model_woody <- lm(woody ~  dist2river+cec +burnfreq+elevation, 
                   data = pointdata)
 summary(model_woody)
-p1<-ggplot(data=pointdata,aes(x=burnfreq,y=woody))+
+
+#burning
+ggplot(data=pointdata,aes(x=burnfreq,y=woody))+
   geom_point() +
   geom_smooth(method="lm",
               formula= y~x,
               se=T)
-p1
-p2<-ggplot(data=pointdata,aes(x=cec,y=woody))+
+
+#CEC
+ggplot(data=pointdata,aes(x=cec,y=woody))+
   geom_point() +
   geom_smooth(method="lm",
               #              method.args=list(family=Gamma(link="log")),
               formula= y~x,
               se=T) 
-p2
+
+#distance to river
+ggplot(data=pointdata,aes(x=dist2river,y=woody))+
+  geom_point() +
+  geom_smooth(method="lm",
+              #              method.args=list(family=Gamma(link="log")),
+              formula= y~x,
+              se=T) 
+
+#elevation
+ggplot(data=pointdata,aes(x=elevation,y=woody))+
+  geom_point() +
+  geom_smooth(method="lm",
+              #              method.args=list(family=Gamma(link="log")),
+              formula= y~x,
+              se=T) 
 
 # Model_burnfreq: burning frequency predicted by Core Protected Areas and Rainfall
 model_burnfreq_init <- glm(burnfreq ~ CorProtAr + rainfall, 
@@ -43,66 +61,74 @@ model_burnfreq <- MASS::glm.nb(burnfreq ~ CorProtAr + rainfall,
                                data = pointdata)
 summary(model_burnfreq)
 
-p3<-ggplot(data=pointdata,aes(y=burnfreq,x=CorProtAr))+
+#burn/CorProtAr
+ggplot(data=pointdata,aes(y=burnfreq,x=CorProtAr))+
   geom_jitter(width = 0.05, height = 0.1) +
   geom_smooth(method="glm",
               method.args=list(family=quasipoisson),  # close to glm.nb
               formula= y~x,
               se=T)
-p3
-p4<-ggplot(data=pointdata,aes(y=burnfreq,x=rainfall))+
+
+#burn/rainfall
+ggplot(data=pointdata,aes(y=burnfreq,x=rainfall))+
   geom_jitter(width = 0.05, height = 0.1) +
   geom_smooth(method="glm",
               method.args=list(family=quasipoisson),
               formula= y~x,
               se=T)
-p4
 
 # model_cec: predicted by rainfall
-
 model_cec <- lm(cec ~ rainfall + CorProtAr, 
                 data = pointdata)
 summary(model_cec)
 
-p5<-ggplot(data=pointdata,aes(y=cec,x=rainfall))+
+#cec/rainfall
+ggplot(data=pointdata,aes(y=cec,x=rainfall))+
   geom_point() +
   geom_smooth(method="lm",
               formula= y~x,
               se=T)
-p5
-
-p6<-ggplot(data=pointdata,aes(y=cec,x=CorProtAr))+
+#cec/CorProtAr
+ggplot(data=pointdata,aes(y=cec,x=CorProtAr))+
   geom_point() +
   geom_smooth(method="lm",
               formula= y~x,
               se=T)
-p6
-
 
 # model_CorProtAra:  predicted by elevation
 model_CorProtAr <-glm(CorProtAr~elevation,
                       family=binomial,
                       data=pointdata)
 summary(model_CorProtAr)
-p7<-ggplot(data=pointdata,aes(y=CorProtAr,x=elevation))+
+#CorProtAr/elevation
+ggplot(data=pointdata,aes(y=CorProtAr,x=elevation))+
   geom_jitter(height = 0.02) +
   geom_smooth(method="glm",
               method.args=list(family=binomial),
               formula= y~x,
               se=T)
-p7
 
 # model_rainfall: rainfall predicted by elevation
 model_rainfall <- lm(rainfall ~ elevation, 
                      data = pointdata)
 summary(model_rainfall)
 
-p8<-ggplot(data=pointdata,aes(y=rainfall,x=elevation))+
+ggplot(data=pointdata,aes(y=rainfall,x=elevation))+
   geom_point() +
   geom_smooth(method="lm",
               formula= y~x,
               se=T)
-p8
+
+# model_dist2river: distance to river predicted by elevation
+model_dist2river <- lm(dist2river ~ elevation, 
+                        data = pointdata)
+summary(model_dist2river)
+
+ggplot(data=pointdata,aes(y=dist2river,x=elevation))+
+  geom_point() +
+  geom_smooth(method="lm",
+              formula= y~x,
+              se=T)
 
 # combine the figures
 library(patchwork)
@@ -116,9 +142,10 @@ psem_model <- piecewiseSEM::psem(model_woody,
                                  model_burnfreq,
                                  model_cec,
                                  model_CorProtAr,
-                                 model_rainfall)
+                                 model_rainfall,
+                                 model_dist2river)
 
 # Summarize the SEM results
-summary(psem_model)
+summary(psem_model, conserve = TRUE)
 
 plot(psem_model)

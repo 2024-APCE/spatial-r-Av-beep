@@ -84,8 +84,8 @@ xlimits<-c(740000,790000)
 ylimits<-c(9740000,9770000)
 
 #limits for the whole area
-#xlimits<-c(550000,900000)
-#ylimits<-c(9600000,9950000)
+xlimits<-c(550000,900000)
+ylimits<-c(9600000,9950000)
 
 # plot the woody biomass map that you want to predict
 woody_map <- ggplot () +
@@ -110,6 +110,29 @@ woody_map <- ggplot () +
         axis.ticks = element_blank())+
   ggspatial::annotation_scale(location="bl", width_hint=0.2)
 woody_map
+
+
+#plot hillshade - help
+hillshade_map <- ggplot () +
+  tidyterra::geom_spatraster(data=hillshade) +
+  scale_fill_gradientn(colours=rev(terrain.colors(6)), 
+                       limits=c(150,250),
+                       oob=squish,
+                       name="hill") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill=NA, linewidth=0.5) +
+  tidyterra::geom_spatvector(data=rivers,
+                             colour="deepskyblue2", linewidth=0.5) +
+  tidyterra::geom_spatvector(data=studyarea,
+                             fill=NA, colour="red", linewidth=1)+
+  tidyterra::geom_spatvector(data=lakes,
+                             fill="royalblue3", linewidth=0.5)+
+  labs(title="Hillshade") +
+  coord_sf(xlim=xlimits, ylim=ylimits, datum= sf::st_crs(32736))+
+  theme(axis.text=element_blank(),
+        axis.ticks = element_blank())+
+  ggspatial::annotation_scale(location="bl", width_hint=0.2)
+hillshade_map
 
 # plot the rainfall map
 rain_map <- ggplot () +
@@ -149,13 +172,14 @@ elev_map <- ggplot () +
                              fill=NA, colour="red", linewidth=1)+
   tidyterra::geom_spatvector(data=lakes,
                              fill="royalblue3", linewidth=0.5)+
-  labs(title="Elevation in the study area",
-       caption="Source: APCE2024") +
+  labs(title="Elevation") +
   coord_sf(xlim=xlimits, ylim=ylimits, datum= sf::st_crs(32736))+
   theme(axis.text=element_blank(),
         axis.ticks = element_blank())+
   ggspatial::annotation_scale(location="bl", width_hint=0.2)
 elev_map
+
+ggsave("elev_map.png", elev_map, width = 10, height = 10, dpi = 300)
 
 woody_map + elev_map + rain_map
 
