@@ -1,3 +1,6 @@
+#Piecewise SEM
+rm(list = ls()) 
+
 library(piecewiseSEM)
 
 pointdata_init<-read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQHXBBah_VLNcQIUaouCXzWnb2G47yWduBZfnXOx4S61ySn-rGlQqY0TTjGZSB_5AUDTFD2yttfOD5t/pub?gid=99131913&single=true&output=csv")
