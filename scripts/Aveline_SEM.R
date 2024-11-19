@@ -42,17 +42,7 @@ mulreg_std <- lm(woody ~ dist2river+elevation+CorProtAr+rainfall+cec+burnfreq+hi
 
 summary(mulreg_std)
 
-# visualization of the result: 
-# browseURL("https://docs.google.com/presentation/d/1Q7uXC5Wiu0G4Xsp5uszCNHKOnf1IMI9doY-13Wbay4A/edit?usp=sharing")
-
-# Make a lavaan model as hypothesized in the Anderson et al 2007 paper and fit the model 
-leaf_N_model <- 'LF_N~BIOMASS+RES_LHU+FIRE_FRQ+NMS
-                BIOMASS~FIRE_FRQ+RES_LHU
-                NMS~FIRE_FRQ+RES_LHU'
-leaf_N_model
-
-Leaf_N_fit <- lavaan::sem(leaf_N_model, data = Anderson2007std)
-
+#make a model
 woody_model <- 'woody~dist2river+cec+rainfall+burnfreq+elevation
                 rainfall~hills+elevation
                 burnfreq~elevation+CorProtAr+rainfall
@@ -72,28 +62,49 @@ woody_model1 <- 'woody~burnfreq+cec+hills
                 dist2river~elevation'
 woody_model1
 
+#CorProtAr could have an impact on cec, because those areas area are fertile
+#low rain means higher nutrients, more rain means it washes away nutrients
+
+#burn --> poisson
+#CorProtAr --> binomial
+
+
 woody_fit1 <- lavaan::sem(woody_model1, data = SEMdatastd)
 summary(woody_fit1, standardized = T, fit.measures = T, rsquare = T)
-
-# show the model results
-summary(Leaf_N_fit, standardized = T, fit.measures = T, rsquare = T)
 
 # goodness of fit (should be >0.9): CFI and TLI
 # badness of fit: ( should be <0.1): RMSEA, SRMR
 
-<<<<<<< HEAD
-# visualise the model
-=======
-  >>>>>>> 8a237fe2317acaad42b557f15ab08d729405ba65
+###
 
-# also explore the models as shown in fig 5b and 5c of the Anderson2007 paper
-# so repeat the model for leaf P content
-leaf_p_model <- 'LF_P~BIOMASS+RES_LHU+FIRE_FRQ+NMS
-                BIOMASS~FIRE_FRQ+RES_LHU
-                NMS~FIRE_FRQ+RES_LHU'
-leaf_p_model
+# Install and load required package
+if (!require(DiagrammeR)) install.packages("DiagrammeR")
+library(DiagrammeR)
 
-Leaf_p_fit <- lavaan::sem(leaf_p_model, data = Anderson2007std)
+# Define the nodes and edges
+graph <- create_graph() %>%
+  add_node(label = "Distance to River", id = "dist2river") %>%
+  add_node(label = "Elevation", id = "elevation") %>%
+  add_node(label = "Protected Area", id = "CorProtAr") %>%
+  add_node(label = "Rainfall", id = "rainfall") %>%
+  add_node(label = "Soil CEC", id = "cec") %>%
+  add_node(label = "Burn Frequency", id = "burnfreq") %>%
+  add_node(label = "Hills", id = "hills") %>%
+  add_node(label = "Woody Cover", id = "woody") %>%
+  
+  # Add edges based on relationships
+  add_edge(from = "dist2river", to = "elevation") %>%
+  add_edge(from = "elevation", to = "rainfall") %>%
+  add_edge(from = "rainfall", to = "cec") %>%
+  add_edge(from = "rainfall", to = "burnfreq") %>%
+  add_edge(from = "burnfreq", to = "woody") %>%
+  add_edge(from = "cec", to = "woody") %>%
+  add_edge(from = "hills", to = "woody") %>%
+  add_edge(from = "CorProtAr", to = "woody") %>%
+  add_edge(from = "elevation", to = "woody")
 
-# show the model results
-summary(Leaf_p_fit, standardized = T, fit.measures = T, rsquare = T)
+# Visualize the causal web
+render_graph(graph)
+
+
+
