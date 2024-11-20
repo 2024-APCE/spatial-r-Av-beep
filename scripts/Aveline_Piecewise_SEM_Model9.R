@@ -131,4 +131,4 @@ psem_model <- piecewiseSEM::psem(model_woody,
                                  model_rainfall,
                                  model_dist2river)
 summary(psem_model, conserve = TRUE)
-
+plot(psem_model)

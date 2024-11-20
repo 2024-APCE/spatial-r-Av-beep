@@ -85,7 +85,7 @@ ylimits<-c(9740000,9770000)
 
 #limits for the whole area
 xlimits<-c(550000,900000)
-ylimits<-c(9600000,9950000)
+ylimits<-c(9600000,9850000)
 
 # plot the woody biomass map that you want to predict
 woody_map <- ggplot () +
@@ -102,9 +102,7 @@ woody_map <- ggplot () +
                              fill=NA, colour="red", linewidth=1)+
   tidyterra::geom_spatvector(data=lakes,
                              fill="royalblue3", linewidth=0.5)+
-  labs(title="Woody biomass in the study area",
-       subtitle="Tropical Biomass Assessment 2016",
-       caption="Source: APCE2024") +
+  labs(title="Woody biomass") +
   coord_sf(xlim=xlimits, ylim=ylimits, datum= sf::st_crs(32736))+
   theme(axis.text=element_blank(),
         axis.ticks = element_blank())+
@@ -181,7 +179,11 @@ elev_map
 
 ggsave("elev_map.png", elev_map, width = 10, height = 10, dpi = 300)
 
-woody_map + elev_map + rain_map
+p1 <- woody_map + elev_map
+p1
+
+#ggsave p1
+ggsave("p1.png", p1, width = 8, height = 6, dpi = 300)
 
 #plot woody_map + elev_map + rain_map in two columns
 woody_map + elev_map + rain_map + plot_layout(ncol=2)
