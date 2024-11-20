@@ -56,6 +56,10 @@ woody_fit <- lavaan::sem(woody_model, data = SEMdatastd)
 summary(woody_fit, standardized = T, fit.measures = T, rsquare = T)
 
 #another try
+mulreg_std1 <- lm(woody ~ dist2river+elevation+cec+burnfreq, data = SEMdatastd)
+
+summary(mulreg_std1)
+
 woody_model1 <- 'woody~dist2river+burnfreq+cec+elevation
                 burnfreq~CorProtAr+rainfall
                 cec~CorProtAr+rainfall
@@ -67,8 +71,6 @@ woody_model1
 woody_fit1 <- lavaan::sem(woody_model1, data = SEMdatastd)
 summary(woody_fit1, standardized = T, fit.measures = T, rsquare = T)
 # CFI: 0.852, TLI: 0.690, RMSEA: 0.211, SRMR: 0.086
-
-
 
 #another try
 woody_model2 <- 'woody~dist2river+burnfreq+cec
@@ -82,6 +84,110 @@ woody_model2
 woody_fit2 <- lavaan::sem(woody_model2, data = SEMdatastd)
 summary(woody_fit2, standardized = T, fit.measures = T, rsquare = T)
 
+#model 3
+mulreg_std3 <- lm(woody ~ burnfreq+dist2river+rainfall+cec, data = SEMdatastd)
+summary(mulreg_std3)
+
+woody_model3<- 'woody~burnfreq+dist2river+rainfall+cec
+                burnfreq~CorProtAr
+                dist2river~CorProtAr+elevation
+                rainfall~elevation
+                CorProtAr~elevation'
+woody_model3
+
+woody_fit3 <- lavaan::sem(woody_model3, data = SEMdatastd)
+summary(woody_fit3, standardized = T, fit.measures = T, rsquare = T)
+
+#model 4
+mulreg_std4 <- lm(woody ~ dist2river+CorProtAr+rainfall+cec, data = SEMdatastd)
+summary(mulreg_std4)
+
+woody_model4<- 'woody~dist2river+CorProtAr+rainfall+cec
+                dist2river~elevation
+                CorProtAr~dist2river+elevation
+                rainfall~elevation
+                cec~rainfall'
+woody_model4
+
+woody_fit4 <- lavaan::sem(woody_model4, data = SEMdatastd)
+summary(woody_fit4, standardized = T, fit.measures = T, rsquare = T)
+
+#model 5
+mulreg_std5 <- lm(woody ~ dist2river+rainfall+cec+burnfreq+elevation, data = SEMdatastd)
+summary(mulreg_std5)
+
+woody_model5<- 'woody~dist2river+rainfall+cec+burnfreq+elevation
+                dist2river~elevation
+                burnfreq~dist2river
+                rainfall~elevation
+                cec~rainfall'
+woody_model5
+
+woody_fit5 <- lavaan::sem(woody_model5, data = SEMdatastd)
+summary(woody_fit5, standardized = T, fit.measures = T, rsquare = T)
+
+#model 6
+woody_model6 <- 'woody ~ cec + elevation
+                burnfreq ~ CorProtAr + rainfall
+                 cec ~ CorProtAr + rainfall
+                 CorProtAr ~ elevation
+                 rainfall ~ elevation
+                 dist2river ~ elevation'
+woody_model6
+
+woody_fit6 <- lavaan::sem(woody_model6, data = SEMdatastd)
+summary(woody_fit6, standardized = T, fit.measures = T, rsquare = T)
+
+#model 7
+woody_model7 <- 'woody ~ cec + elevation
+    burnfreq ~ CorProtAr + rainfall
+    cec ~ CorProtAr + rainfall
+    CorProtAr ~ elevation
+    rainfall ~ elevation
+    dist2river ~ elevation
+    woody ~ burnfreq'
+woody_model7
+
+woody_fit7 <- lavaan::sem(woody_model7, data = SEMdatastd)
+summary(woody_fit7, standardized = T, fit.measures = T, rsquare = T)
+
+#model 8
+woody_model8 <- 'woody ~ cec + elevation
+    burnfreq ~ CorProtAr + rainfall
+    cec ~ CorProtAr + rainfall
+    CorProtAr ~ elevation
+    rainfall ~ elevation
+    dist2river ~ elevation
+    rainfall ~~ dist2river'
+woody_model8
+
+woody_fit8 <- lavaan::sem(woody_model8, data = SEMdatastd)
+summary(woody_fit8, standardized = T, fit.measures = T, rsquare = T)
+
+#model 9
+woody_model9 <- 'woody ~ cec + elevation + burnfreq
+    burnfreq ~ CorProtAr + rainfall
+    cec ~ CorProtAr + rainfall
+    CorProtAr ~ elevation
+    rainfall ~ elevation
+    dist2river ~ elevation
+    rainfall ~~ dist2river'
+woody_model9
+
+woody_fit9 <- lavaan::sem(woody_model9, data = SEMdatastd)
+summary(woody_fit9, standardized = T, fit.measures = T, rsquare = T)
+
+#model 10
+woody_model10<- 'woody ~ cec + elevation + burnfreq
+    burnfreq ~ CorProtAr + rainfall
+    cec ~ CorProtAr + rainfall
+    CorProtAr ~ elevation
+    rainfall ~ elevation
+    dist2river ~ elevation'
+woody_model10
+
+woody_fit10 <- lavaan::sem(woody_model10, data = SEMdatastd)
+summary(woody_fit10, standardized = T, fit.measures = T, rsquare = T)
 
 
 #CorProtAr could have an impact on cec, because those areas area are fertile
